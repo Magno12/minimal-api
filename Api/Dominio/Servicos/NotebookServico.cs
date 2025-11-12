@@ -17,17 +17,32 @@ public class NotebookServico : INotebookServico
 
     public void Apagar(Notebook notebook)
     {
-        throw new NotImplementedException();
+        _contexto.Notebooks.Remove(notebook);
+        _contexto.SaveChanges();
     }
 
     public void Atualizar(Notebook notebook)
     {
-        throw new NotImplementedException();
+       _contexto.Notebooks.Update(notebook);
+        _contexto.SaveChanges();
     }
 
     public Notebook? BuscarPorId(int id)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var notebook = _contexto.Notebooks.FirstOrDefault(n => n.Id == id);
+            return notebook != null ? notebook : null;
+        }
+        catch (System.ArgumentNullException e)
+        {
+            throw new Exception("Referencia nula " + e.Message);
+            //tratar exeção
+        }
+        catch (System.Exception e)
+        {
+            throw new Exception("Erro no Buscar Notebook Por Id " + e.Message);
+        }
     }
 
     public void Incluir(Notebook notebook)
@@ -39,12 +54,19 @@ public class NotebookServico : INotebookServico
         }
         catch (System.Exception e)
         {
-            throw new Exception("Erro no Incluir Notebook "+ e.Message);
+            throw new Exception("Erro no Incluir Notebook " + e.Message);
         }
     }
 
     public List<Notebook> Todos()
     {
-        throw new NotImplementedException();
+        try
+        {
+            return _contexto.Notebooks.ToList();
+        }
+        catch (System.Exception e)
+        {
+            throw new Exception("Erro ao Lista Todos Notebook " + e.Message);
+        }
     }
 }

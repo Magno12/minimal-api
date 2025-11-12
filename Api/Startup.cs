@@ -1,8 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -96,7 +98,6 @@ public class Startup
                 });
         });
     }
-
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
         app.UseSwagger();
@@ -111,13 +112,8 @@ public class Startup
 
         app.UseEndpoints(endpoints =>
         {
-
             #region Home
             endpoints.MapGet("/", () => Results.Json(new Home())).AllowAnonymous().WithTags("Home");
-            #endregion
-
-            #region Teste
-            endpoints.MapGet("/Teste", () => Results.Json(new Home())).AllowAnonymous().WithTags("Teste");
             #endregion
 
             #region Administradores
@@ -330,6 +326,14 @@ public class Startup
             #region Notebook
             endpoints.MapPost("/notebook", ([FromBody] NotebookDTO notebookDTO, INotebookServico notebookServico) =>
             {
+                if (string.IsNullOrEmpty(notebookDTO.Descricao))
+                    return Results.BadRequest("Campo Descricao não pode ser Vazio");
+
+                if (string.IsNullOrEmpty(notebookDTO.Marca))
+                    return Results.BadRequest("Campo Marca não pode ser Vazio");
+
+                if (string.IsNullOrEmpty(notebookDTO.Cor))
+                    return Results.BadRequest("Campo Cor não pode ser Vazio");
 
                 var notebook = new Notebook
                 {
@@ -340,16 +344,55 @@ public class Startup
 
                 notebookServico.Incluir(notebook);
 
-                /*     return Results.Created($"/administrador/{administrador.Id}", new AdministradorModelView
-                   {
-                       Id = administrador.Id,
-                       Email = administrador.Email,
-                       Perfil = administrador.Perfil
-                   });  */
-
-
                 return Results.Created($"/notebook/{notebook.Id}", notebook);
 
+            })
+            .RequireAuthorization()
+            .RequireAuthorization(new AuthorizeAttribute { Roles = "Adm" })
+            .WithTags("Notebook");
+
+            endpoints.MapGet("/notebook/{id}", ([FromRoute] int id, INotebookServico notebookServico) =>
+            {
+                var notebook = notebookServico.BuscarPorId(id);
+                if (notebook == null) return Results.NotFound();
+                return Results.Ok(notebook);
+            })
+            .RequireAuthorization()
+            .RequireAuthorization(new AuthorizeAttribute { Roles = "Adm,Editor" })
+            .WithTags("Notebook");
+
+            endpoints.MapGet("/notebook", ([FromQuery] int? pagina, INotebookServico notebookServico) =>
+           {
+               var notebook = notebookServico.Todos();
+
+               return Results.Ok(notebook);
+           }).RequireAuthorization().WithTags("Notebook");
+
+            endpoints.MapPut("/notebook/{id}", ([FromRoute] int id, NotebookDTO notebookDTO, INotebookServico notebookServico) =>
+            {
+                var notebook = notebookServico.BuscarPorId(id);
+                if (notebook == null) return Results.NotFound();
+
+                notebook.Descricao = notebookDTO.Descricao;
+                notebook.Marca = notebookDTO.Marca;
+                notebook.Cor = notebookDTO.Cor;
+
+                notebookServico.Atualizar(notebook);
+
+                return Results.Ok(notebook);
+            })
+            .RequireAuthorization()
+            .RequireAuthorization(new AuthorizeAttribute { Roles = "Adm" })
+            .WithTags("Notebook");
+
+            endpoints.MapDelete("/notebook/{id}", ([FromRoute] int id, INotebookServico notebookServico) =>
+            {
+                var notebook = notebookServico.BuscarPorId(id);
+                if (notebook == null) return Results.NotFound();
+
+                notebookServico.Apagar(notebook);
+
+                return Results.NoContent();
             })
             .RequireAuthorization()
             .RequireAuthorization(new AuthorizeAttribute { Roles = "Adm" })
