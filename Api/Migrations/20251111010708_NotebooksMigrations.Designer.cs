@@ -10,8 +10,8 @@ using MinimalApi.Infraestrutura.Db;
 namespace mininal_api.Migrations
 {
     [DbContext(typeof(DbContexto))]
-    [Migration("20251111005421_NotebookMigrations")]
-    partial class NotebookMigrations
+    [Migration("20251111010708_NotebooksMigrations")]
+    partial class NotebooksMigrations
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -54,6 +54,32 @@ namespace mininal_api.Migrations
                             Perfil = "Adm",
                             Senha = "123456"
                         });
+                });
+
+            modelBuilder.Entity("MinimalApi.Dominio.Entidades.Notebook", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Cor")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("Marca")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Notebooks");
                 });
 
             modelBuilder.Entity("MinimalApi.Dominio.Entidades.Veiculo", b =>

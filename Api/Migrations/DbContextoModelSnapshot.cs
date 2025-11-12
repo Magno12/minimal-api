@@ -53,6 +53,32 @@ namespace mininal_api.Migrations
                         });
                 });
 
+            modelBuilder.Entity("MinimalApi.Dominio.Entidades.Notebook", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Cor")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("Marca")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Notebooks");
+                });
+
             modelBuilder.Entity("MinimalApi.Dominio.Entidades.Veiculo", b =>
                 {
                     b.Property<int>("Id")
